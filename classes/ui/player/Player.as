@@ -12,7 +12,7 @@
 
 	public class Player extends Sprite {
 
-		public static const PLAYER_WIDTH = 720;
+		public static const PLAYER_WIDTH = 1080;
 		public static const PLAYER_HEIGHT = 405;
 		public static const PLAYER_X = 100;
 		public static const PLAYER_Y = 100;
