@@ -12,6 +12,7 @@
 
 	public class Player extends Sprite {
 
+		public static const PLAYER_WIDTH = 720;
 		public static const PLAYER_HEIGHT = 405;
 		public static const PLAYER_X = 100;
 		public static const PLAYER_Y = 100;
@@ -38,7 +39,7 @@
 			_player.source = _video.filename;
 
 			_playerOverlay = new Sprite();
-			_playerOverlay.graphics.beginFill(0xff0000, 0.5);
+			_playerOverlay.graphics.beginFill(0xff0000, 0);
 			_playerOverlay.graphics.drawRect(_player.x, _player.y, _player.width, _player.height);
 			_playerOverlay.graphics.endFill();
 			_playerOverlay.addEventListener(MouseEvent.CLICK, playerClick);
