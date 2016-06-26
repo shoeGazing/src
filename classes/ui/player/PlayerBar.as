@@ -64,7 +64,7 @@
 
 			seekbar = new Sprite();
 			seekbar.graphics.beginFill(0x777777);
-			seekbar.graphics.drawRect(0, 0, width, SEEKBAR_HEIGHT * width / 960);
+			seekbar.graphics.drawRect(0, 0, width, SEEKBAR_HEIGHT * width /960);
 			seekbar.graphics.endFill();
 			seekbar.addEventListener(MouseEvent.CLICK, seekbar_click);
 			// to show the seekpoint when house over seekbar but this is confilcting with seeking along the seekbar, so solution needed.
@@ -125,13 +125,13 @@
 
 			playButton = new Loader();
 			playButton.load(new URLRequest("uiimage/play.png"));
-			playButton.y = SEEKBAR_HEIGHT * width / 960 + 4; //the graphic is 24 pixels
+			playButton.y = SEEKBAR_HEIGHT * width / 960 + 8; //the graphic is 24 pixels
 			playButton.addEventListener(MouseEvent.CLICK, playButtonPressed);
 			addChild(playButton);
 
 			fullScreenButton = new Loader();
 			fullScreenButton.load(new URLRequest("uiimage/open.png"));
-			fullScreenButton.y = SEEKBAR_HEIGHT * width / 960 + 4;
+			fullScreenButton.y = SEEKBAR_HEIGHT * width / 960 + 8;
 			fullScreenButton.x = width - 30;
 			fullScreenButton.addEventListener(MouseEvent.CLICK, fullScreenButtonPressed);
 			addChild(fullScreenButton);
@@ -145,7 +145,7 @@
 
 			tagIcon = new Loader();
 			tagIcon.load(new URLRequest("uiimage/tag.PNG"));
-			tagIcon.y = SEEKBAR_HEIGHT * width / 960 + 3;
+			tagIcon.y = SEEKBAR_HEIGHT * width / 960 + 8;
 			tagIcon.x = width - 70;
 			tagIcon.addEventListener(MouseEvent.CLICK, tagIconPressed);
 			addChild(tagIcon);
@@ -157,9 +157,9 @@
 			seekPoint.addEventListener(MouseEvent.MOUSE_DOWN,mouseDown);*/
 			seekPoint = new Sprite();
 			seekPoint.graphics.beginFill(0xff0000);
-			seekPoint.graphics.drawCircle(0, SEEKBAR_HEIGHT * width / 960 / 2, width / 960 * 7);
+			seekPoint.graphics.drawCircle(0, SEEKBAR_HEIGHT * width / 960/2, width / 960 *8);
 			seekPoint.addEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
-			seekbar.addChild(seekPoint);
+			addChild(seekPoint);
 			/*seeker = new Loader();
 			seeker.load(new URLRequest("uiimage/icon6.jpeg"));
 			seeker.y = 120;
@@ -178,6 +178,7 @@
 			timeLabel.text = "00:00 / " + timeInSecondsToTimeString(totalTime);
 			timeLabel.textColor = 0xffffff;
 			timeLabel.width = 200;
+			timeLabel.height = 30;
 			timeLabel.x = 50; // uiimage/play.png is 44 pixels wide
 			timeLabel.y = SEEKBAR_HEIGHT * width / 960 + 8;
 			timeLabel.mouseEnabled = false;
@@ -185,7 +186,7 @@
 			tf.font = "Verdana";
 			tf.size = 15;
 			tf.align = TextFormatAlign.CENTER;
-			timeLabel.defaultTextFormat = tf;
+			timeLabel.defaultTextFormat = tf;   //for input or dynamic texts
 			timeLabel.embedFonts = true;
 			timeLabel.antiAliasType = AntiAliasType.ADVANCED;
 			addChild(timeLabel);
@@ -229,15 +230,15 @@
 			seekbar.graphics.endFill();
 			seekbar.graphics.beginFill(0xff0000);
 			seekbar.graphics.drawRect(0, 0, time / _video.duration * _width, SEEKBAR_HEIGHT * width / 960);
-			playButton.y = SEEKBAR_HEIGHT * width / 960 + 4;
-			tagIcon.y = SEEKBAR_HEIGHT * width / 960 + 3;
+			playButton.y = SEEKBAR_HEIGHT * width / 960 + 8;
+			tagIcon.y = SEEKBAR_HEIGHT * width / 960 + 8;
 			tagIcon.x = width - 70;
 			seekPoint.graphics.clear();
 			seekPoint.graphics.beginFill(0xff0000);
-			seekPoint.graphics.drawCircle(0, SEEKBAR_HEIGHT * width / 960 / 2, width / 960 * 7);
+			seekPoint.graphics.drawCircle(0, SEEKBAR_HEIGHT * width / 960 / 2, width / 960 * 8);
 			seekPoint.x = time / totalPlayTime * _width;
 			timeLabel.y = SEEKBAR_HEIGHT * width / 960 + 8;
-			fullScreenButton.y = SEEKBAR_HEIGHT * width / 960 + 4;
+			fullScreenButton.y = SEEKBAR_HEIGHT * width / 960 + 8;
 			fullScreenButton.x = width - 30;
 
 		}
