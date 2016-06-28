@@ -43,8 +43,11 @@
 		private var thumbnailOverlayArray:Array;
 		//tag history
 		private var tagContainer:Sprite;
-
-
+		private var momentTagArray:Array;
+		private var momentTagFlagArray:Array;
+		private var momentTagShowArray:Array;
+		private var momentTagNum:int =20;
+		private var preventUpdateFlag:int=0
 
 
 		public function Player(video: Video): void {
@@ -162,6 +165,21 @@
 		tagContainer.graphics.drawRect(_player.x, _player.y+_player.height+5, _player.width, (900-_player.height-5- _player.y*2));
 		tagContainer.graphics.endFill();
 		addChild(tagContainer);
+		momentTagArray = new Array();
+		momentTagFlagArray = new Array();
+		momentTagShowArray = new Array();
+		for(var l:int=0;l<Math.ceil(_video.duration/momentTagNum);l++){      //20 is number of tag thumbnail
+			momentTagArray[l] = new Array();
+			momentTagFlagArray[l] = new Array();
+			momentTagShowArray[l] = new Array();
+			for(var m:int=0;m<momentTagNum;m++){
+				momentTagArray[l][m] = new Loader();
+				momentTagFlagArray[l][m] = 0;
+				momentTagShowArray[l][m] = 0;
+			}
+		}
+
+
 		}
 
 		private function playVideo(e: Event = null): void {
@@ -180,6 +198,29 @@
 
 		private function playerUpdate(e: Event = null): void {
 			_playerBar.setPlayTime(_player.playheadTime);
+			if(Math.floor(_player.playheadTime)%momentTagNum!=0){
+				for (var i:int=0;i<momentTagNum;i++){
+					if(momentTagFlagArray[Math.floor(_player.playheadTime/momentTagNum)][i]==1 && momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][i]==0 && preventUpdateFlag==0){
+							addChild(momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][i].content);
+							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][i]=1;
+					}			
+				}
+			}else{
+				for (var j:int=0;j<momentTagNum;j++){
+					if(momentTagFlagArray[Math.floor(_player.playheadTime/momentTagNum)][j]==1 && momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][j]==0 && preventUpdateFlag==0){
+							addChild(momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][j].content);
+							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][j]=1;
+					}
+					if (Math.floor(_player.playheadTime/momentTagNum)>0){
+						if(momentTagFlagArray[Math.floor(_player.playheadTime/momentTagNum)-1][j]==1 && momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)-1][j]==1 && preventUpdateFlag==0){
+							removeChild(momentTagArray[Math.floor(_player.playheadTime/momentTagNum)-1][j].content);
+							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)-1][j]=0;
+					}	
+					}
+								
+				}
+			}
+
 		}
 
 		private function playerBarSeek(e: PlayerBarEvent): void {
@@ -188,7 +229,19 @@
 			if (e.pause) {
 				_player.pause();
 			}
+			if(Math.floor(_player.playheadTime/momentTagNum) != Math.floor(_lastPlayedTime/momentTagNum)){
+				for (var i:int=0;i<momentTagNum;i++){
+					if(momentTagFlagArray[Math.floor(_player.playheadTime/momentTagNum)][i]==1 && momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][i]==1 && preventUpdateFlag==0){
+							removeChild(momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][i].content);
+							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][i]=0;
+					}	
+					if(momentTagFlagArray[Math.floor(_lastPlayedTime/momentTagNum)][i]==1 && momentTagShowArray[Math.floor(_lastPlayedTime/momentTagNum)][i]==0 && preventUpdateFlag==0){
+							addChild(momentTagArray[Math.floor(_lastPlayedTime/momentTagNum)][i].content);
+							momentTagShowArray[Math.floor(_lastPlayedTime/momentTagNum)][i]=1;
+					}	
+			}
 		}
+	}
 
 		private function  showPlayerBar(e: MouseEvent):void{
 			addChild(_playerBar);
@@ -204,16 +257,25 @@
 		}
 
 		private function showTagWord(e:Event = null):void{
+			_playerBar.pauseVideo();
+			_player.pause();
 			addChild(boxLine);
 			for (var i:int=0;i<tagWordArray.length;i++){
 				    addChild( tagTileArray[i]);
 			}
-			_playerBar.pauseVideo();
-			_player.pause();
+			
 			addChild(doneButton);
 			addChild(cancelButton);
 			addChild(backButton);
+			for (var j:int=0;j<momentTagNum;j++){
+					if(momentTagFlagArray[Math.floor(_player.playheadTime/momentTagNum)][j]==1 && momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][j]==1){
+							removeChild(momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][j].content);
+							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][j]=0;
+							preventUpdateFlag++;
+					}			
+				}
 			removeChild(tagContainer);
+			
 		}
 
 		private function tagTileClicked(e:MouseEvent):void{
@@ -242,7 +304,7 @@
 			removeChild(cancelButton);
 			removeChild(boxLine);
 			removeChild(backButton);
-		
+			addChild(tagContainer);
 			if(backModeFlag>0){
 				for (var k:int=_playerOverlay.numChildren-1;k>-1;k--){
 				_playerOverlay.removeChildAt(k);
@@ -254,12 +316,29 @@
 				}
 			}
 			}
+			
+			if (backModeFlag==0){
+				if(momentTagFlagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum]==0){
+					momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum].load(new URLRequest("videoimage/"+Math.ceil(_player.playheadTime)+".png"));
+					momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum].contentLoaderInfo.addEventListener(Event.COMPLETE,
+				function thumbnailFinishedLoading(e: Event): void {
+					momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum].content.width = _player.width/momentTagNum;
+					momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum].content.height =_player.width/momentTagNum/16*9;
+					momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum].content.y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9;
+					momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum].content.x =_player.x+(Math.floor(_player.playheadTime)%momentTagNum)*_player.width/momentTagNum;
+					momentTagFlagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum]=1;
+					addChild(momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum].content);
+					momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum] =1;
+				});	
+					
+				}
+			}
 			_playerBar.playVideo();
 			_player.play();
 			_playerOverlay.addEventListener(MouseEvent.ROLL_OVER, showPlayerBar);
 			_playerOverlay.addEventListener(MouseEvent.ROLL_OUT, hidePlayerBar);
 			backModeFlag=0;
-			addChild(tagContainer);
+			preventUpdateFlag = 0;
 		}
 
 		private function cancelClicked(e:MouseEvent):void{
@@ -292,6 +371,7 @@
 			_playerOverlay.addEventListener(MouseEvent.ROLL_OUT, hidePlayerBar);
 			backModeFlag=0;
 			addChild(tagContainer);
+			preventUpdateFlag = 0;
 		}
 
 		private function backClicked(e:MouseEvent):void{
@@ -320,7 +400,7 @@
 				thumbnailOverlayArray[i].addChild(thumbnailArray[i]);
 			}
 			}
-
+			
 		}
 
 
