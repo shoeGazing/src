@@ -47,8 +47,15 @@
 		private var momentTagFlagArray:Array;
 		private var momentTagShowArray:Array;
 		private var momentTagNum:int =20;
-		private var preventUpdateFlag:int=0
-
+		private var preventUpdateFlag:int=0;
+		private var intervalTagYArray:Array;
+		private var intervalTagXArray:Array;
+		private var intervalTagData:Array;
+		private var intervalLoaderArray:Array;
+		private var intervalLoader:Array;
+		private var intervalTagFlag:Array;
+		private var yFlag:int=0;
+		private var xFlag:int=0;
 
 		public function Player(video: Video): void {
 			_video = video;
@@ -178,7 +185,9 @@
 				momentTagShowArray[l][m] = 0;
 			}
 		}
-
+		intervalTagYArray = new Array();
+		intervalLoaderArray = new Array();
+		intervalTagFlag = new Array();
 
 		}
 
@@ -331,6 +340,69 @@
 					momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][Math.floor(_player.playheadTime)%momentTagNum] =1;
 				});	
 					
+				}
+			}else{
+				intervalTagData = new Array();
+				intervalTagData[0] = Math.ceil(_player.playheadTime);
+				intervalTagData[1] = intervalTagData[0] - backModeFlag*backModeDuration+1;
+				if(yFlag==0){
+					yFlag = 1;
+					intervalTagXArray = new Array();
+					intervalTagXArray.push(intervalTagData);
+					intervalTagYArray.push(intervalTagXArray);
+					intervalLoader = new Array();
+					intervalLoaderArray.push(intervalLoader);
+					intervalTagFlag.push([0,0]);
+					for (var s:int =0;s<backModeFlag*backModeDuration;s++){
+						intervalLoader[s] = new Loader();
+						intervalLoader[s].load(new URLRequest("intervalimage/out"+(intervalTagData[1]+s)+".png"));
+						intervalLoader[s].x = ((intervalTagData[1]+s-1)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
+						intervalLoader[s].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+					}
+				
+				}else{
+					for(var n:int=0; n<intervalTagYArray.length; n++){
+						for (var r:int=0;r<intervalTagYArray[n].length;r++){
+							if(intervalTagData[0] ==intervalTagYArray[n][r][0] && intervalTagData[1] ==intervalTagYArray[n][r][1]){
+								break;
+							}else if(intervalTagData[0]<intervalTagYArray[n][r][1] || intervalTagData[1] >intervalTagYArray[n][r][0]){
+								xFlag++;
+								if(xFlag==intervalTagYArray[n].length){
+									intervalTagYArray[n][intervalTagYArray[n].length] = intervalTagData;
+									intervalLoader = new Array();
+					                intervalLoaderArray.push(intervalLoader);
+					                intervalTagFlag.push([n,intervalTagYArray[n].length]);
+					                for (var t:int =0;t<backModeFlag*backModeDuration;t++){
+						                intervalLoader[t] = new Loader();
+						                intervalLoader[t].load(new URLRequest("intervalimage/out"+(intervalTagData[1]+t)+".png"));
+						                intervalLoader[t].x = ((intervalTagData[1]+t-1)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
+						                intervalLoader[t].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+					                   }
+									break;
+								}
+							}else{
+								yFlag++;
+								if(yFlag==intervalTagYArray.length){
+									intervalTagXArray = new Array();
+									intervalTagYArray.push(intervalTagXArray);
+									intervalTagYArray.push(intervalTagData);
+									intervalLoader = new Array();
+					                intervalLoaderArray.push(intervalLoader);
+					                intervalTagFlag.push([yFlag,0]);
+					                for (var v:int =0;v<backModeFlag*backModeDuration;v++){
+						                intervalLoader[v] = new Loader();
+						                intervalLoader[v].load(new URLRequest("intervalimage/out"+(intervalTagData[1]+v)+".png"));
+						                intervalLoader[v].x = ((intervalTagData[1]+v-1)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
+						                intervalLoader[v].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+					                  }
+									break;
+								}else{
+									xFlag=0;
+									continue;
+								}
+							}
+						}
+					}
 				}
 			}
 			_playerBar.playVideo();
