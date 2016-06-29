@@ -219,12 +219,17 @@
 							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][i]=1;
 					}		
 				}
-				if(yFlag>0){
+			preventTag1 = 0;
+				if(intervalLoaderArray.length>0 && preventTag ==0){
 					for (var k:int=0;k<intervalLoaderArray.length;k++){
 						for(var l:int=0; l<intervalLoaderArray[k].length;l++){
-
+							if(Math.floor((intervalTagYArray[intervalTagFlag[k][0]][intervalTagFlag[k][1]][1] +l)/momentTagNum) == Math.floor(_player.playheadTime/momentTagNum) && intervalTagShowArray[k][l]==0){
+								addChild(intervalLoaderArray[k][l]);
+								intervalTagShowArray[k][l]=1;
+							}
 						}
 				}
+				preventTag =1;
 				}
 			}else{
 				for (var j:int=0;j<momentTagNum;j++){
@@ -238,6 +243,22 @@
 							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)-1][j]=0;
 					}	
 					}								
+				}
+				preventTag = 0;
+				if(intervalLoaderArray.length>0 && preventTag1 == 0){
+					for(var m:int=0;m<intervalLoaderArray.length;m++){
+						for(var n:int=0;n<intervalLoaderArray[m].length;n++){
+							if(intervalTagShowArray[m][n] == 1){
+								removeChild(intervalLoaderArray[m][n]);
+								intervalTagShowArray[m][n]=0;
+							}
+							if(Math.floor((intervalTagYArray[intervalTagFlag[m][0]][intervalTagFlag[m][1]][1]+n)/momentTagNum)==Math.floor(_player.playheadTime/momentTagNum) && intervalTagShowArray[m][n]==0){
+								addChild(intervalLoaderArray[m][n]);
+								intervalTagShowArray[m][n]=1;
+							}
+						}
+					}
+					preventTag1 =1;
 				}
 
 			}
@@ -261,6 +282,20 @@
 							momentTagShowArray[Math.floor(_lastPlayedTime/momentTagNum)][i]=1;
 					}	
 			}
+		}
+		if(intervalLoaderArray.length>0){
+			for(var m:int=0;m<intervalLoaderArray.length;m++){
+						for(var n:int=0;n<intervalLoaderArray[m].length;n++){
+							if(intervalTagShowArray[m][n] == 1){
+								removeChild(intervalLoaderArray[m][n]);
+								intervalTagShowArray[m][n]=0;
+							}
+							if(Math.floor((intervalTagYArray[intervalTagFlag[m][0]][intervalTagFlag[m][1]][1]+n)/momentTagNum)==Math.floor(_lastPlayedTime/momentTagNum) && intervalTagShowArray[m][n]==0){
+								addChild(intervalLoaderArray[m][n]);
+								intervalTagShowArray[m][n]=1;
+							}
+						}
+					}
 		}
 	}
 
@@ -295,8 +330,17 @@
 							preventUpdateFlag++;
 					}			
 				}
+			if(intervalLoaderArray.length>0){
+				for(var m:int=0;m<intervalLoaderArray.length;m++){
+						for(var n:int=0;n<intervalLoaderArray[m].length;n++){
+							if(intervalTagShowArray[m][n] == 1){
+								removeChild(intervalLoaderArray[m][n]);
+								intervalTagShowArray[m][n]=0;
+							}
+						}
+					}
+			}
 			removeChild(tagContainer);
-			
 		}
 
 		private function tagTileClicked(e:MouseEvent):void{
@@ -357,53 +401,69 @@
 				intervalTagData = new Array();
 				intervalTagData[0] = _player.playheadTime;
 				intervalTagData[1] = intervalTagData[0] - backModeFlag*backModeDuration+1;
-				if(yFlag==0){
-					yFlag = 1;
+				if(intervalTagYArray.length==0){
 					intervalTagXArray = new Array();
 					intervalTagXArray.push(intervalTagData);
 					intervalTagYArray.push(intervalTagXArray);
 					intervalLoader = new Array();
 					intervalTagShow = new Array();
-					intervalTagShowArray.push(intervalTagshow);
+					intervalTagShowArray.push(intervalTagShow);
 					intervalLoaderArray.push(intervalLoader);
 					intervalTagFlag.push([0,0]);
 					for (var s:int =0;s<backModeFlag*backModeDuration;s++){
 						intervalLoader[s] = new Loader();
 						intervalLoader[s].load(new URLRequest("intervalimage/out"+(Math.ceil(intervalTagData[1])+s)+".png"));
 						intervalLoader[s].x = ((Math.floor(intervalTagData[1])+s)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
-						intervalLoader[s].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+						intervalLoader[s].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*(yFlag+1);
 						intervalTagShow[s]=0;
 					}
-				
+
 				}else{
+					xFlag=0;
+					var breakIndicator:int=1;
+					var breakIndicator1:int=1;
 					for(var n:int=0; n<intervalTagYArray.length; n++){
+						if(breakIndicator==0){
+							
+							break;
+						
+						}
 						for (var r:int=0;r<intervalTagYArray[n].length;r++){
-							if(intervalTagData[0] ==intervalTagYArray[n][r][0] && intervalTagData[1] ==intervalTagYArray[n][r][1]){
+							if(breakIndicator==0 || breakIndicator1 ==0){
 								break;
+							}
+							if(intervalTagData[0] ==intervalTagYArray[n][r][0] && intervalTagData[1] ==intervalTagYArray[n][r][1]){
+								breakIndicator =0;
+							
 							}else if(intervalTagData[0]<intervalTagYArray[n][r][1] || intervalTagData[1] >intervalTagYArray[n][r][0]){
 								xFlag++;
+
 								if(xFlag==intervalTagYArray[n].length){
 									intervalTagYArray[n][intervalTagYArray[n].length] = intervalTagData;
 									intervalLoader = new Array();
 									intervalTagShow = new Array();
 									intervalTagShowArray.push(intervalTagShow);
 					                intervalLoaderArray.push(intervalLoader);
-					                intervalTagFlag.push([n,intervalTagYArray[n].length]);
+					                intervalTagFlag.push([n,(intervalTagYArray[n].length-1)]);
 					                for (var t:int =0;t<backModeFlag*backModeDuration;t++){
 						                intervalLoader[t] = new Loader();
 						                intervalLoader[t].load(new URLRequest("intervalimage/out"+(Math.ceil(intervalTagData[1])+t)+".png"));
 						                intervalLoader[t].x = ((Math.floor(intervalTagData[1])+t)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
-						                intervalLoader[t].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+						                intervalLoader[t].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*(n+1);
 						                intervalTagShow[t]=0;
 					                   }
-									break;
+					     
+					                breakIndicator=0;
+									
+								}else{
+									continue;
 								}
 							}else{
 								yFlag++;
 								if(yFlag==intervalTagYArray.length){
 									intervalTagXArray = new Array();
 									intervalTagYArray.push(intervalTagXArray);
-									intervalTagYArray.push(intervalTagData);
+									intervalTagXArray.push(intervalTagData);
 									intervalLoader = new Array();
 									intervalTagShow =new Array();
 									intervalTagShowArray.push(intervalTagShow);
@@ -413,13 +473,14 @@
 						                intervalLoader[v] = new Loader();
 						                intervalLoader[v].load(new URLRequest("intervalimage/out"+(Math.ceil(intervalTagData[1])+v)+".png"));
 						                intervalLoader[v].x = ((Math.floor(intervalTagData[1])+v)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
-						                intervalLoader[v].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+						                intervalLoader[v].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*(yFlag+1);
 						                intervalTagShow[v] = 0;
 					                  }
-									break;
+					                breakIndicator=0;
 								}else{
 									xFlag=0;
-									continue;
+									breakIndicator1=0;
+								
 								}
 							}
 						}
@@ -432,6 +493,8 @@
 			_playerOverlay.addEventListener(MouseEvent.ROLL_OUT, hidePlayerBar);
 			backModeFlag=0;
 			preventUpdateFlag = 0;
+			preventTag=0;
+			preventTag1=0;
 		}
 
 		private function cancelClicked(e:MouseEvent):void{
@@ -465,6 +528,8 @@
 			backModeFlag=0;
 			addChild(tagContainer);
 			preventUpdateFlag = 0;
+			preventTag1=0;
+			preventTag=0;
 		}
 
 		private function backClicked(e:MouseEvent):void{
