@@ -47,15 +47,19 @@
 		private var momentTagFlagArray:Array;
 		private var momentTagShowArray:Array;
 		private var momentTagNum:int =20;
-		private var preventUpdateFlag:int=0;
+		private var preventUpdateFlag:int=0; //for moment
 		private var intervalTagYArray:Array;
 		private var intervalTagXArray:Array;
 		private var intervalTagData:Array;
 		private var intervalLoaderArray:Array;
 		private var intervalLoader:Array;
-		private var intervalTagFlag:Array;
+		private var intervalTagFlag:Array; //record interval x and y index
 		private var yFlag:int=0;
 		private var xFlag:int=0;
+		private var preventTag:int=0; //for % !=0 interval
+		private var preventTag1:int=0; //for % ==0 interval
+		private var intervalTagShowArray:Array; // index of interval show
+		private var intervalTagShow:Array // index of loader show of specific interval
 
 		public function Player(video: Video): void {
 			_video = video;
@@ -175,7 +179,7 @@
 		momentTagArray = new Array();
 		momentTagFlagArray = new Array();
 		momentTagShowArray = new Array();
-		for(var l:int=0;l<Math.ceil(_video.duration/momentTagNum);l++){      //20 is number of tag thumbnail
+		for(var l:int=0;l<Math.ceil(_video.duration/momentTagNum);l++){  
 			momentTagArray[l] = new Array();
 			momentTagFlagArray[l] = new Array();
 			momentTagShowArray[l] = new Array();
@@ -187,7 +191,8 @@
 		}
 		intervalTagYArray = new Array();
 		intervalLoaderArray = new Array();
-		intervalTagFlag = new Array();
+		intervalTagFlag = new Array(); 
+		intervalTagShowArray = new Array();
 
 		}
 
@@ -212,7 +217,14 @@
 					if(momentTagFlagArray[Math.floor(_player.playheadTime/momentTagNum)][i]==1 && momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][i]==0 && preventUpdateFlag==0){
 							addChild(momentTagArray[Math.floor(_player.playheadTime/momentTagNum)][i].content);
 							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)][i]=1;
-					}			
+					}		
+				}
+				if(yFlag>0){
+					for (var k:int=0;k<intervalLoaderArray.length;k++){
+						for(var l:int=0; l<intervalLoaderArray[k].length;l++){
+
+						}
+				}
 				}
 			}else{
 				for (var j:int=0;j<momentTagNum;j++){
@@ -225,9 +237,9 @@
 							removeChild(momentTagArray[Math.floor(_player.playheadTime/momentTagNum)-1][j].content);
 							momentTagShowArray[Math.floor(_player.playheadTime/momentTagNum)-1][j]=0;
 					}	
-					}
-								
+					}								
 				}
+
 			}
 
 		}
@@ -343,7 +355,7 @@
 				}
 			}else{
 				intervalTagData = new Array();
-				intervalTagData[0] = Math.ceil(_player.playheadTime);
+				intervalTagData[0] = _player.playheadTime;
 				intervalTagData[1] = intervalTagData[0] - backModeFlag*backModeDuration+1;
 				if(yFlag==0){
 					yFlag = 1;
@@ -351,13 +363,16 @@
 					intervalTagXArray.push(intervalTagData);
 					intervalTagYArray.push(intervalTagXArray);
 					intervalLoader = new Array();
+					intervalTagShow = new Array();
+					intervalTagShowArray.push(intervalTagshow);
 					intervalLoaderArray.push(intervalLoader);
 					intervalTagFlag.push([0,0]);
 					for (var s:int =0;s<backModeFlag*backModeDuration;s++){
 						intervalLoader[s] = new Loader();
-						intervalLoader[s].load(new URLRequest("intervalimage/out"+(intervalTagData[1]+s)+".png"));
-						intervalLoader[s].x = ((intervalTagData[1]+s-1)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
+						intervalLoader[s].load(new URLRequest("intervalimage/out"+(Math.ceil(intervalTagData[1])+s)+".png"));
+						intervalLoader[s].x = ((Math.floor(intervalTagData[1])+s)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
 						intervalLoader[s].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+						intervalTagShow[s]=0;
 					}
 				
 				}else{
@@ -370,13 +385,16 @@
 								if(xFlag==intervalTagYArray[n].length){
 									intervalTagYArray[n][intervalTagYArray[n].length] = intervalTagData;
 									intervalLoader = new Array();
+									intervalTagShow = new Array();
+									intervalTagShowArray.push(intervalTagShow);
 					                intervalLoaderArray.push(intervalLoader);
 					                intervalTagFlag.push([n,intervalTagYArray[n].length]);
 					                for (var t:int =0;t<backModeFlag*backModeDuration;t++){
 						                intervalLoader[t] = new Loader();
-						                intervalLoader[t].load(new URLRequest("intervalimage/out"+(intervalTagData[1]+t)+".png"));
-						                intervalLoader[t].x = ((intervalTagData[1]+t-1)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
+						                intervalLoader[t].load(new URLRequest("intervalimage/out"+(Math.ceil(intervalTagData[1])+t)+".png"));
+						                intervalLoader[t].x = ((Math.floor(intervalTagData[1])+t)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
 						                intervalLoader[t].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+						                intervalTagShow[t]=0;
 					                   }
 									break;
 								}
@@ -387,13 +405,16 @@
 									intervalTagYArray.push(intervalTagXArray);
 									intervalTagYArray.push(intervalTagData);
 									intervalLoader = new Array();
+									intervalTagShow =new Array();
+									intervalTagShowArray.push(intervalTagShow);
 					                intervalLoaderArray.push(intervalLoader);
 					                intervalTagFlag.push([yFlag,0]);
 					                for (var v:int =0;v<backModeFlag*backModeDuration;v++){
 						                intervalLoader[v] = new Loader();
-						                intervalLoader[v].load(new URLRequest("intervalimage/out"+(intervalTagData[1]+v)+".png"));
-						                intervalLoader[v].x = ((intervalTagData[1]+v-1)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
+						                intervalLoader[v].load(new URLRequest("intervalimage/out"+(Math.ceil(intervalTagData[1])+v)+".png"));
+						                intervalLoader[v].x = ((Math.floor(intervalTagData[1])+v)%momentTagNum)*(_player.width/momentTagNum)+_player.x;
 						                intervalLoader[v].y = _player.y+_player.height+5+(900-_player.height-5- _player.y*2)-10-_player.width/momentTagNum/16*9-5-_player.width/momentTagNum/16*9*yFlag;
+						                intervalTagShow[v] = 0;
 					                  }
 									break;
 								}else{
